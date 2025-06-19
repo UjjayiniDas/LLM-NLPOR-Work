@@ -1,0 +1,110 @@
+---
+title: "Data Preprocessing for LLM"
+author: "Ujjayini Das"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# *********************
+# Subset SIPP Data ----
+#
+# This script reads the SIPP 2014 person-level data from wave 1, subsets 
+# the data for working age population and preprocesses the data for fine
+# tuning LLM.
+# *****************************************************************************
+
+
+# *****************************************************************************
+# Load Packages ----
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Load `pacman` for pkg management
+if (!require("pacman", character.only = TRUE)){
+  install.packages("pacman", dep = TRUE)
+  if (!require("pacman", character.only = TRUE))
+    stop("Package not found")
+}
+
+# Packages to use
+pkgs <- c("tidyverse",    # General data manipulation
+          "dplyr",        # General data manipulation
+          "dbplyr",       # Interface for databases
+          "haven",        # Load Stata datasets
+          "RSQLite",      # SQL
+          "glue",         # For gluing
+          "survey",       # Survey data analysis
+          "srvyr",        # Survey data analysis
+          "readxl",       # excel file reading
+          "readr",        # reading text data
+          "data.table",   # handling data table
+          "purrr")        # data wrangling
+
+# Install packages as needed
+if(!sum(!p_isinstalled(pkgs)) == 0){
+  p_install(package = pkgs[!p_isinstalled(pkgs)], character.only = TRUE)
+}
+
+# Load the packages
+p_load(pkgs, character.only = TRUE)
+rm(pkgs)
+```
+
+# *****************************************************************************
+# Process Microdata ----
+
+```{r}
+# Load data from wave 1
+SIPP_w1 <- read_csv("Data/SIPP14_Wave1_Cooked.csv")
+var_rename <- read_excel("Data/rename columns.xlsx")
+# Process for LLM
+df_w1 <- SIPP_w1 %>%
+  # Rename columns to more legible words
+  setnames(., old = var_rename$old_name, new = var_rename$new_name) %>%
+  # removing unnecessary columns
+  select(-c(14,16,18,20,22)) %>%
+  # sub-setting to working age population
+  filter(age >= 15) %>%
+  # collapsing education categories
+  mutate(education =  ifelse(education %in% 31:38, "Less than high school",
+                      ifelse(education == 39, "High school",
+                      ifelse(education %in% 40:42, "Some college",
+                      ifelse(education == 43, "Bachelor's degree",
+                      ifelse(education %in% 44:46, "Postgraduate degree", education))))))
+# setting `state` as numeric
+df_w1$state <- as.numeric(df_w1$state)
+
+# Re-coding values with text
+# Step 1: Read the codebook
+codebook <- read_csv("Data/SIPP14_Wave1_labels.csv")
+
+# Step 2: Split the codebook by variable
+code_mappings <- codebook %>%
+  group_by(variable) %>%
+  group_split()
+
+# Step 3: Define replacement function (overwrite and remove code column)
+replace_labels <- function(df, mapping_df) {
+  var_name <- unique(mapping_df$variable)
+  
+  # Build a lookup table
+  mapping_tbl <- mapping_df %>%
+    select(code, label) %>%
+    distinct()
+  
+  # Replace code with label in the main data
+  df %>%
+    left_join(mapping_tbl, by = setNames("code", var_name)) %>%
+    mutate(!!sym(var_name) := .data$label) %>%
+    select(-label)
+}
+
+# Step 4: Apply to all variables
+df_w1_updated <- reduce(code_mappings, replace_labels, .init = df_w1)
+
+# Converting age to character
+df_w1_updated$age <- as.character(df_w1_updated$age)
+
+# save as excel
+#write_csv(df_w1_updated, "Data/Processed_for_LLM/SIPP14_Wave1_processed.csv")
+```

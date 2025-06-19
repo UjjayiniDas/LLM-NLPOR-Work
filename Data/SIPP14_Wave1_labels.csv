@@ -1,0 +1,80 @@
+variable,code,label
+marital status,1,"Married, spouse present"
+marital status,2,"Married, spouse absent"
+marital status,3,Widowed
+marital status,4,Divorced
+marital status,5,Separated
+marital status,6,Never married
+sex,1,Male
+sex,2,Female
+hispanic origin,1,Hispanic
+hispanic origin,2,Non hispanic
+race,1,White
+race,2,Black
+race,3,Asian
+race,4,Other
+citizenship,1,US citizen
+citizenship,2,Non US citizen
+employment,1,"With a job entire month, worked all weeks"
+employment,2,"With a job all month, absent from work without pay 1+ weeks, absence not due to layoff"
+employment,3,"With a job all month, absent from work without pay 1+ weeks, absence due to layoff"
+employment,4,"With a job at least 1 but not all weeks, no time on layoff and no time looking for work"
+employment,5,"With a job at least 1 but not all weeks, some weeks on layoff or looking for work"
+employment,6,"No job all month, on layoff or looking for work all weeks"
+employment,7,"No job all month, at least one but not all weeks on layoff or looking for work"
+employment,8,"No job all month, no time on layoff and no time looking for work"
+state,1,Alabama
+state,2,Alaska
+state,4,Arizona
+state,5,Arkansas
+state,6,California
+state,8,Colorado
+state,9,Connecticut
+state,10,Delaware
+state,11,District of Columbia
+state,12,Florida
+state,13,Georgia
+state,15,Hawaii
+state,16,Idaho
+state,17,Illinois
+state,18,Indiana
+state,19,Iowa
+state,20,Kansas
+state,21,Kentucky
+state,22,Louisiana
+state,23,Maine
+state,24,Maryland
+state,25,Massachusetts
+state,26,Michigan
+state,27,Minnesota
+state,28,Mississippi
+state,29,Missouri
+state,30,Montana
+state,31,Nebraska
+state,32,Nevada
+state,33,New Hampshire
+state,34,New Jersey
+state,35,New Mexico
+state,36,New York
+state,37,North Carolina
+state,38,North Dakota
+state,39,Ohio
+state,40,Oklahoma
+state,41,Oregon
+state,42,Pennsylvania
+state,44,Rhode Island
+state,45,South Carolina
+state,46,South Dakota
+state,47,Tennessee
+state,48,Texas
+state,49,Utah
+state,50,Vermont
+state,51,Virginia
+state,53,Washington
+state,54,West Virginia
+state,55,Wisconsin
+state,56,Wyoming
+state,60,Puerto Rico and Island Areas
+state,61,Foreign Country
+snap,1,SNAP covered
+snap,2,Not SNAP covered
