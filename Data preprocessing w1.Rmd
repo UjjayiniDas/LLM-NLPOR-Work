@@ -112,10 +112,10 @@ df_w1_updated$age <- as.character(df_w1_updated$age)
 ## Qwen 7B finetune confusion matrix
 
 ```{r}
-df_pred <- read_excel("C:/Users/USER PC/Downloads/finetuned_snap_predictions_nonimputed.xlsx")
+df_pred <- read_excel("./Predictions_QWEN7B/finetuned_snap_predictions_nonimputed.xlsx")
 table(df_pred$Predicted_Label,df_pred$ImputedSIPP_Label)
 
-df_imp_pred <- read_excel("C:/Users/USER PC/Downloads/finetuned_qwen7b_predictions_imputed.xlsx")
+df_imp_pred <- read_excel("./Predictions_QWEN7B/finetuned_qwen7b_predictions_imputed.xlsx")
 table(df_imp_pred$Predicted_Label,df_imp_pred$ImputedSIPP_Label)
 
 ```
