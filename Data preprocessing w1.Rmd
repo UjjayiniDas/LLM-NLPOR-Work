@@ -148,5 +148,131 @@ wave1and2_llm <- wave1and2_full %>%
   rename_with(~ gsub("\\.y$", "", .x))
 # save as excel
 #write_csv(wave1and2_llm, "Data/Processed_for_LLM/Wave1and2_processed.csv")
+```
+
+
+## Cleaning and processing wave 3 and 4 data
+
+```{r}
+# Process for LLM
+SIPP_w3 <- read_csv("Data/SIPP14_Wave3_Cooked.csv")
+df_w3 <- SIPP_w3 %>%
+  # Rename columns to more legible words
+  setnames(., old = var_rename$old_name, new = var_rename$new_name) %>%
+  # removing unnecessary columns
+  select(-c(14,16,18,20,22)) %>%
+  # sub-setting to working age population
+  filter(age >= 15) %>%
+  # collapsing education categories
+  mutate(education =  ifelse(education %in% 31:38, "Less than high school",
+                      ifelse(education == 39, "High school",
+                      ifelse(education %in% 40:42, "Some college",
+                      ifelse(education == 43, "Bachelor's degree",
+                      ifelse(education %in% 44:46, "Postgraduate degree", education))))))
+# setting `state` as numeric
+df_w3$state <- as.numeric(df_w3$state)
+
+# Re-coding values with text
+# Step 1: Read the codebook
+codebook <- read_csv("Data/SIPP14_Wave1_labels.csv")
+
+# Step 2: Split the codebook by variable
+code_mappings <- codebook %>%
+  group_by(variable) %>%
+  group_split()
+
+# Step 3: Define replacement function (overwrite and remove code column)
+replace_labels <- function(df, mapping_df) {
+  var_name <- unique(mapping_df$variable)
   
+  # Build a lookup table
+  mapping_tbl <- mapping_df %>%
+    select(code, label) %>%
+    distinct()
+  
+  # Replace code with label in the main data
+  df %>%
+    left_join(mapping_tbl, by = setNames("code", var_name)) %>%
+    mutate(!!sym(var_name) := .data$label) %>%
+    select(-label)
+}
+
+# Step 4: Apply to all variables
+df_w3_updated <- reduce(code_mappings, replace_labels, .init = df_w3)
+
+# Converting age to character
+df_w3_updated$age <- as.character(df_w3_updated$age)
+
+# save as excel
+#write_csv(df_w3_updated, "Data/Processed_for_LLM/SIPP14_Wave3_processed.csv")
+
+
+## Wave 4
+SIPP_w4 <- read_csv("Data/SIPP14_Wave4_Cooked.csv")
+df_w4 <- SIPP_w4 %>%
+  # Rename columns to more legible words
+  setnames(., old = var_rename$old_name, new = var_rename$new_name) %>%
+  # removing unnecessary columns
+  select(-c(14,16,18,20,22)) %>%
+  # sub-setting to working age population
+  filter(age >= 15) %>%
+  # collapsing education categories
+  mutate(education =  ifelse(education %in% 31:38, "Less than high school",
+                      ifelse(education == 39, "High school",
+                      ifelse(education %in% 40:42, "Some college",
+                      ifelse(education == 43, "Bachelor's degree",
+                      ifelse(education %in% 44:46, "Postgraduate degree", education))))))
+# setting `state` as numeric
+df_w4$state <- as.numeric(df_w4$state)
+
+df_w4_updated <- reduce(code_mappings, replace_labels, .init = df_w4)
+
+# Converting age to character
+df_w4_updated$age <- as.character(df_w4_updated$age)
+
+# save as excel
+#write_csv(df_w4_updated, "Data/Processed_for_LLM/SIPP14_Wave4_processed.csv")
+```
+
+### Creating merged datasets
+## merging wave 3 with wave 1 and 2 combined
+
+```{r}
+## Creating unique ID (sample unit ID X person ID)
+wave3_full <- df_w3_updated %>%
+  mutate(unique_ID_2 = paste0(`sample unit ID`,"_",`person ID`)) %>%
+  dplyr::select(-c(1,3:6,13:14,16:20,24:25,27:28))
+
+## merge with wave 1 and 2 combined
+wave123_full <- merge(wave1and2_llm,wave3_full, by.x = "unique_ID_1", by.y = "unique_ID_2")
+
+## final process for LLM
+wave123_llm <- wave123_full %>%
+  dplyr::select(-c(4:10,12:14)) %>%
+  filter(imputed_snap.x == FALSE) %>%
+  rename_with(~ gsub("\\.x$", "_wave2", .x)) %>%
+  rename_with(~ gsub("\\.y$", "", .x))
+# save as excel
+write_csv(wave123_llm, "Data/Processed_for_LLM/Wave123_processed.csv")
+```
+
+## Wave 4 merging with wave 1,2,3 combined
+
+```{r}
+## Creating unique ID (sample unit ID X person ID)
+wave4_full <- df_w4_updated %>%
+  mutate(unique_ID_2 = paste0(`sample unit ID`,"_",`person ID`)) %>%
+  dplyr::select(-c(1,3:6,13:14,16:20,24:25,27:28))
+
+## merge with wave 1 and 2 combined
+wave1234_full <- merge(wave123_llm,wave4_full, by.x = "unique_ID_1", by.y = "unique_ID_2")
+
+## final process for LLM
+wave1234_llm <- wave1234_full %>%
+  dplyr::select(-c(6:12,14:16)) %>%
+  filter(imputed_snap.x == FALSE) %>%
+  rename_with(~ gsub("\\.x$", "_wave3", .x)) %>%
+  rename_with(~ gsub("\\.y$", "", .x))
+# save as excel
+write_csv(wave1234_llm, "Data/Processed_for_LLM/Wave1234_processed.csv")
 ```
