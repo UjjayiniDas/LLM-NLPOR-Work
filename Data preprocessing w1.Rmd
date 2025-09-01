@@ -128,7 +128,7 @@ table(df_imp_pred$Predicted_Label,df_imp_pred$ImputedSIPP_Label)
 ```{r}
 ## Reading in wave 1 and 2 data as it is
 wave1_full <- read_csv("Data/Processed_for_LLM/SIPP14_Wave1_processed.csv")
-wave2_full <- read_csv("Data/Processed_for_LLM/SIPP14_Wave2_processed.csv")
+wave2_full <- read_csv("Data/Processed_for_LLM/SIPP14_Wave2_processed_v2.csv")
 
 ## Creating unique ID (sample unit ID X person ID)
 wave1_full <- wave1_full %>%
@@ -301,26 +301,88 @@ wave1_new <- merge(wave1_raw, wave1_full, by.x = "unique_ID", by.y = "unique_ID_
 #write_csv(wave1_new, "Data/Processed_for_LLM/wave1_processed_withINCOME.csv")
 ```
 
+
+## Processing wave 2 for income [NOT FINISHED YET]
+
 ```{r}
-## Reading raw wave 1 data
+## Reading raw wave 2 data
 file_path2 <- "C:/Users/USER PC/Downloads/pu2014w2_csv/pu2014w2.csv"
 #columns_to_keep <- c("SHHADID", "SPANEL","SSUID","SWAVE","PNUM","MONTHCODE","THTOTINC")
 wave2_raw <- fread(file_path2, select = columns_to_keep)
+# creating unique ID and adding leading zeroes
 wave2_raw <- wave2_raw %>%
   mutate(unique_ID_2 = paste0(SSUID,"_",PNUM),
          unique_ID_2 = str_pad(unique_ID_2, width = 16, side = "left", pad = "0")) %>%
   filter(MONTHCODE == 12)
 ## Writing to excel
-write_csv(wave2_raw, "Data/Wave2_raw_with_income.csv")
+#write_csv(wave2_raw, "Data/Wave2_raw_with_income.csv")
 ## removing three leading digits from unique ID of our wave1_full data
 #wave1_full_new <- wave1_full %>%
   #mutate(unique_ID_1 = substring(unique_ID_1,first = 4))
-wave2_new <- merge(wave2_raw, wave2_full, by = "unique_ID_2")
-wave2_na <- wave2_new %>%
-  filter(is.na(THTOTINC))
-  
-  
-  mutate(income = THTOTINC) 
+wave2_new <- merge(wave2_raw, wave2_full, by = "unique_ID_2") %>%
+  mutate(income = THTOTINC) %>%
+  dplyr::select(-c(2:8))
 ## Writing in excel
-#write_csv(wave1_new, "Data/Processed_for_LLM/wave1_processed_withINCOME.csv")
+#write_csv(wave2_new, "Data/Processed_for_LLM/wave2_processed_withINCOME.csv")
+```
+
+
+## Processing wave 3 for income
+
+```{r}
+wave3_old <- read.csv("./Data/Processed_for_LLM/SIPP14_Wave3_processed.csv")
+wave3_old <- wave3_old %>% 
+  mutate(unique_ID_2 = paste0(sample.unit.ID,"_",person.ID)) %>%
+  dplyr::select(-c(1,3:6,13:14,16:20,24:25,27:28))
+
+## Raw data from wave 3 with income
+
+file_path3 <- "C:/Users/USER PC/Downloads/pu2014w3_csv/pu2014w3.csv"
+#columns_to_keep <- c("SHHADID", "SPANEL","SSUID","SWAVE","PNUM","MONTHCODE","THTOTINC")
+wave3_raw <- fread(file_path3, select = columns_to_keep)
+# creating unique ID and adding leading zeroes
+wave3_raw <- wave3_raw %>%
+  mutate(unique_ID_2 = paste0(SSUID,"_",PNUM)) %>%
+         #unique_ID_2 = str_pad(unique_ID_2, width = 16, side = "left", pad = "0")) %>%
+  filter(MONTHCODE == 12)
+## Writing to excel
+#write_csv(wave3_raw, "Data/Wave3_raw_with_income.csv")
+## removing three leading digits from unique ID of our wave1_full data
+#wave1_full_new <- wave1_full %>%
+  #mutate(unique_ID_1 = substring(unique_ID_1,first = 4))
+wave3_new <- merge(wave3_raw, wave3_old, by = "unique_ID_2") %>%
+  mutate(income = THTOTINC) %>%
+  dplyr::select(-c(2:8)) %>%
+  rename_with(~ gsub("\\.", " ", .x))
+## Writing in excel
+write_csv(wave3_new, "Data/Processed_for_LLM/wave3_processed_withINCOME.csv")
+```
+
+### Processing wave 4 with income
+
+```{r}
+wave4_old <- read.csv("./Data/Processed_for_LLM/SIPP14_Wave4_processed.csv")
+wave4_old <- wave4_old %>% 
+  rename_with(~ gsub("\\.", " ", .x)) %>%
+  mutate(unique_ID_2 = paste0(`sample unit ID`,"_",`person ID`)) %>%
+  dplyr::select(-c(1,3:6,13:14,16:20,24:25,27:28))
+
+## Raw data from wave 3 with income
+
+file_path4 <- "C:/Users/USER PC/Downloads/pu2014w4_csv/pu2014w4.csv"
+#columns_to_keep <- c("SHHADID", "SPANEL","SSUID","SWAVE","PNUM","MONTHCODE","THTOTINC")
+wave4_raw <- fread(file_path4, select = columns_to_keep)
+# creating unique ID and adding leading zeroes
+wave4_raw <- wave4_raw %>%
+  mutate(unique_ID_2 = paste0(SSUID,"_",PNUM)) %>%
+         #unique_ID_2 = str_pad(unique_ID_2, width = 16, side = "left", pad = "0")) %>%
+  filter(MONTHCODE == 12)
+## Writing to excel
+#write_csv(wave4_raw, "Data/Wave4_raw_with_income.csv")
+
+wave4_new <- merge(wave4_raw, wave4_old, by = "unique_ID_2") %>%
+  mutate(income = THTOTINC) %>%
+  dplyr::select(-c(2:8)) 
+## Writing in excel
+write_csv(wave4_new, "Data/Processed_for_LLM/wave4_processed_withINCOME.csv")
 ```
