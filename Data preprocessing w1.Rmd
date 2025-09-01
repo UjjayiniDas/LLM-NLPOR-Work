@@ -38,7 +38,8 @@ pkgs <- c("tidyverse",    # General data manipulation
           "readxl",       # excel file reading
           "readr",        # reading text data
           "data.table",   # handling data table
-          "purrr")        # data wrangling
+          "purrr",
+          "stringr")        # data wrangling
 
 # Install packages as needed
 if(!sum(!p_isinstalled(pkgs)) == 0){
@@ -277,3 +278,49 @@ wave1234_llm <- wave1234_full %>%
 write_csv(wave1234_llm, "Data/Processed_for_LLM/Wave1234_processed.csv")
 ```
 
+
+## Processing data with monthly household income
+```{r}
+## Reading raw wave 1 data
+file_path <- "C:/Users/USER PC/Downloads/pu2014w1_csv/pu2014w1.csv"
+columns_to_keep <- c("SHHADID", "SPANEL","SSUID","SWAVE","PNUM","MONTHCODE","THTOTINC")
+wave1_raw <- fread(file_path, select = columns_to_keep)
+wave1_raw <- wave1_raw %>%
+  mutate(unique_ID = paste0(SSUID,"_",PNUM),
+         unique_ID = str_pad(unique_ID, width = 16, side = "left", pad = "0")) %>%
+  filter(MONTHCODE == 12)
+## Writing to excel
+write_csv(wave1_raw, "Data/Wave1_raw_with_income.csv")
+## removing three leading digits from unique ID of our wave1_full data
+#wave1_full_new <- wave1_full %>%
+  #mutate(unique_ID_1 = substring(unique_ID_1,first = 4))
+wave1_new <- merge(wave1_raw, wave1_full, by.x = "unique_ID", by.y = "unique_ID_1") %>%
+  mutate(income = THTOTINC) %>%
+  dplyr::select(-c(2:8))
+## Writing in excel
+#write_csv(wave1_new, "Data/Processed_for_LLM/wave1_processed_withINCOME.csv")
+```
+
+```{r}
+## Reading raw wave 1 data
+file_path2 <- "C:/Users/USER PC/Downloads/pu2014w2_csv/pu2014w2.csv"
+#columns_to_keep <- c("SHHADID", "SPANEL","SSUID","SWAVE","PNUM","MONTHCODE","THTOTINC")
+wave2_raw <- fread(file_path2, select = columns_to_keep)
+wave2_raw <- wave2_raw %>%
+  mutate(unique_ID_2 = paste0(SSUID,"_",PNUM),
+         unique_ID_2 = str_pad(unique_ID_2, width = 16, side = "left", pad = "0")) %>%
+  filter(MONTHCODE == 12)
+## Writing to excel
+write_csv(wave2_raw, "Data/Wave2_raw_with_income.csv")
+## removing three leading digits from unique ID of our wave1_full data
+#wave1_full_new <- wave1_full %>%
+  #mutate(unique_ID_1 = substring(unique_ID_1,first = 4))
+wave2_new <- merge(wave2_raw, wave2_full, by = "unique_ID_2")
+wave2_na <- wave2_new %>%
+  filter(is.na(THTOTINC))
+  
+  
+  mutate(income = THTOTINC) 
+## Writing in excel
+#write_csv(wave1_new, "Data/Processed_for_LLM/wave1_processed_withINCOME.csv")
+```
