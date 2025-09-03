@@ -138,17 +138,18 @@ wave2_full <- wave2_full %>%
   mutate(unique_ID_2 = paste0(`sample unit ID`,"_",`person ID`)) %>%
   dplyr::select(-c(1,3:6,13:14,16:17,20,24:25,27:28))
 
-## Create merged data set
-wave1and2_full <- merge(wave1_full,wave2_full, by.x = "unique_ID_1", by.y = "unique_ID_2")
+## Create merged data set (updated based on recoded income data - 9/3)
+wave1and2_full <- merge(dfs[[1]],dfs[[2]], by.x = "unique_ID", by.y = "unique_ID_2")
 
 ## Dataset to feed into LLM
 wave1and2_llm <- wave1and2_full %>%
-  dplyr::select(-c(2:8,10:14,24,25)) %>%
+  dplyr::select(-c(2:8,9:14,16,25:26)) %>%
   filter(imputed_snap.x == FALSE) %>%
   rename_with(~ gsub("\\.x$", "_wave1", .x)) %>%
-  rename_with(~ gsub("\\.y$", "", .x))
+  rename_with(~ gsub("\\.y$", "", .x)) %>%
+  rename_with(~ gsub("\\.", " ", .x))
 # save as excel
-#write_csv(wave1and2_llm, "Data/Processed_for_LLM/Wave1and2_processed.csv")
+#write_csv(wave1and2_llm, "Data/Processed_for_LLM/Wave12_processed.csv")
 ```
 
 
@@ -245,16 +246,19 @@ wave3_full <- df_w3_updated %>%
   dplyr::select(-c(1,3:6,13:14,16:20,24:25,27:28))
 
 ## merge with wave 1 and 2 combined
-wave123_full <- merge(wave1and2_llm,wave3_full, by.x = "unique_ID_1", by.y = "unique_ID_2")
+dfs[[3]] <- dfs[[3]] %>%
+  mutate(unique_ID_2 = str_pad(unique_ID_2, width = 16, side = "left", pad = "0"))
+wave123_full <- merge(wave1and2_llm,dfs[[3]], by.x = "unique_ID", by.y = "unique_ID_2")
 
 ## final process for LLM
 wave123_llm <- wave123_full %>%
-  dplyr::select(-c(4:10,12:14)) %>%
+  dplyr::select(-c(2:9,11:13,15)) %>%
   filter(imputed_snap.x == FALSE) %>%
   rename_with(~ gsub("\\.x$", "_wave2", .x)) %>%
-  rename_with(~ gsub("\\.y$", "", .x))
+  rename_with(~ gsub("\\.y$", "", .x)) %>%
+  rename_with(~ gsub("\\.", " ", .x))
 # save as excel
-write_csv(wave123_llm, "Data/Processed_for_LLM/Wave123_processed.csv")
+#write_csv(wave123_llm, "Data/Processed_for_LLM/Wave123_processed.csv")
 ```
 
 ## Wave 4 merging with wave 1,2,3 combined
@@ -265,17 +269,20 @@ wave4_full <- df_w4_updated %>%
   mutate(unique_ID_2 = paste0(`sample unit ID`,"_",`person ID`)) %>%
   dplyr::select(-c(1,3:6,13:14,16:20,24:25,27:28))
 
-## merge with wave 1 and 2 combined
-wave1234_full <- merge(wave123_llm,wave4_full, by.x = "unique_ID_1", by.y = "unique_ID_2")
+## merge with wave123 combined and 4 (updated with income 9/3)
+dfs[[4]] <- dfs[[4]] %>%
+  mutate(unique_ID_2 = str_pad(unique_ID_2, width = 16, side = "left", pad = "0"))
+wave1234_full <- merge(wave123_llm,dfs[[4]], by.x = "unique_ID", by.y = "unique_ID_2")
 
 ## final process for LLM
 wave1234_llm <- wave1234_full %>%
-  dplyr::select(-c(6:12,14:16)) %>%
+  dplyr::select(-c(2:10,12:14,16)) %>%
   filter(imputed_snap.x == FALSE) %>%
   rename_with(~ gsub("\\.x$", "_wave3", .x)) %>%
-  rename_with(~ gsub("\\.y$", "", .x))
+  rename_with(~ gsub("\\.y$", "", .x)) %>%
+  rename_with(~ gsub("\\.", " ", .x))
 # save as excel
-write_csv(wave1234_llm, "Data/Processed_for_LLM/Wave1234_processed.csv")
+#write_csv(wave1234_llm, "Data/Processed_for_LLM/Wave1234_processed.csv")
 ```
 
 
