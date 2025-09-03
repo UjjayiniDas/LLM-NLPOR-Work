@@ -128,7 +128,7 @@ table(df_imp_pred$Predicted_Label,df_imp_pred$ImputedSIPP_Label)
 ```{r}
 ## Reading in wave 1 and 2 data as it is
 wave1_full <- read_csv("Data/Processed_for_LLM/SIPP14_Wave1_processed.csv")
-wave2_full <- read_csv("Data/Processed_for_LLM/SIPP14_Wave2_processed_v2.csv")
+wave2_full <- read_csv("Data/Processed_for_LLM/SIPP14_Wave2_processed_2.csv")
 
 ## Creating unique ID (sample unit ID X person ID)
 wave1_full <- wave1_full %>%
@@ -149,7 +149,7 @@ wave1and2_llm <- wave1and2_full %>%
   rename_with(~ gsub("\\.y$", "", .x)) %>%
   rename_with(~ gsub("\\.", " ", .x))
 # save as excel
-#write_csv(wave1and2_llm, "Data/Processed_for_LLM/Wave12_processed.csv")
+write_csv(wave1and2_llm, "Data/Processed_for_LLM/Wave12_processed.csv")
 ```
 
 
@@ -252,7 +252,7 @@ wave123_full <- merge(wave1and2_llm,dfs[[3]], by.x = "unique_ID", by.y = "unique
 
 ## final process for LLM
 wave123_llm <- wave123_full %>%
-  dplyr::select(-c(2:9,11:13,15)) %>%
+  dplyr::select(-c(2:10,12:14,16)) %>%
   filter(imputed_snap.x == FALSE) %>%
   rename_with(~ gsub("\\.x$", "_wave2", .x)) %>%
   rename_with(~ gsub("\\.y$", "", .x)) %>%
@@ -282,7 +282,7 @@ wave1234_llm <- wave1234_full %>%
   rename_with(~ gsub("\\.y$", "", .x)) %>%
   rename_with(~ gsub("\\.", " ", .x))
 # save as excel
-#write_csv(wave1234_llm, "Data/Processed_for_LLM/Wave1234_processed.csv")
+write_csv(wave1234_llm, "Data/Processed_for_LLM/Wave1234_processed.csv")
 ```
 
 
@@ -330,7 +330,7 @@ wave2_new <- merge(wave2_raw, wave2_full, by = "unique_ID_2") %>%
   mutate(income = THTOTINC) %>%
   dplyr::select(-c(2:8))
 ## Writing in excel
-#write_csv(wave2_new, "Data/Processed_for_LLM/wave2_processed_withINCOME.csv")
+write_csv(wave2_new, "Data/Processed_for_LLM/wave2_processed_withINCOME.csv")
 ```
 
 
