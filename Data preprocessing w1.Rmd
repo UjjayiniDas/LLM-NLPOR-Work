@@ -386,3 +386,25 @@ wave4_new <- merge(wave4_raw, wave4_old, by = "unique_ID_2") %>%
 ## Writing in excel
 write_csv(wave4_new, "Data/Processed_for_LLM/wave4_processed_withINCOME.csv")
 ```
+
+## Recoding income for the processed datasets
+
+```{r}
+files_wIncome <- list.files(path = "Data/Processed_for_LLM/", pattern = "INCOME", full.names = TRUE)
+
+dfs <- lapply(files_wIncome, function(f) {
+  read.csv(f) %>%
+     mutate(income = ifelse(income <= 0, "no income or loss",
+                     ifelse(income > 0 & income <= 1000, "less than 1000 dollars",
+                     ifelse(income > 1000 & income <= 2000, "between 1000 and 2000 dollars",
+                     ifelse(income > 2000 & income <= 3000, "between 2000 and 3000 dollars",
+                     ifelse(income > 3000 & income <= 5000, "between 3000 and 5000 dollars",
+                     ifelse(income > 5000 & income <= 10000, "between 5000 and 10000 dollars","more than 10000 dollars")))))))
+})
+
+names(dfs) <- tools::file_path_sans_ext(basename(files_wIncome))
+
+for (i in seq_along(files_wIncome)) {
+  write.csv(dfs[[i]], files_wIncome[i], row.names = FALSE)
+}
+```
