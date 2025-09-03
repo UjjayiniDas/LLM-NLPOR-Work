@@ -143,7 +143,7 @@ wave1and2_full <- merge(dfs[[1]],dfs[[2]], by.x = "unique_ID", by.y = "unique_ID
 
 ## Dataset to feed into LLM
 wave1and2_llm <- wave1and2_full %>%
-  dplyr::select(-c(2:8,9:14,16,25:26)) %>%
+  dplyr::select(-c(2:8,10:14,16,25:26)) %>%
   filter(imputed_snap.x == FALSE) %>%
   rename_with(~ gsub("\\.x$", "_wave1", .x)) %>%
   rename_with(~ gsub("\\.y$", "", .x)) %>%
