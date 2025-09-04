@@ -415,3 +415,26 @@ for (i in seq_along(files_wIncome)) {
   write.csv(dfs[[i]], files_wIncome[i], row.names = FALSE)
 }
 ```
+
+
+
+### Adding previous years of SNAP coverage to 123 and 1234 datasets
+
+```{r}
+w12 <- read.csv("Data/Processed_for_LLM/Wave12_processed.csv")
+w123 <- read.csv("Data/Processed_for_LLM/Wave123_processed.csv")
+w1234 <- read.csv("Data/Processed_for_LLM/Wave1234_processed.csv")
+
+w123_temp <- merge(w12,w123,by="unique_ID") %>%
+  dplyr::select(c(1,17))
+w123 <- merge(w123,w123_temp, by = "unique_ID")  %>%
+  rename_with(~ gsub("\\.", " ", .x))
+#write.csv(w123, "Data/Processed_for_LLM/Wave123_processed.csv")
+
+w1234_temp <- merge(w123,w1234, by = "unique_ID") %>%
+  dplyr::select(c(1,17,19))
+w1234 <- merge(w1234,w1234_temp, by = "unique_ID")  %>%
+  rename_with(~ gsub("\\.", " ", .x))
+write.csv(w1234, "Data/Processed_for_LLM/Wave1234_processed.csv")
+```
+```
